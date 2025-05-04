@@ -194,21 +194,42 @@
 
     // Eliminar tarea
     const deleteTask = async (id) => {
-      const mutation = `
-        mutation {
-          deleteTask(id: "${id}")
+      try {
+        const mutation = `
+          mutation {
+            deleteTask(id: "${id}")
+          }
+        `;
+        
+        const response = await fetch(apiUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ query: mutation }),
+        });
+    
+        if (!response.ok) {
+          throw new Error('Error de red');
         }
-      `;
-      const response = await fetch(apiUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ query: mutation })
-      });
-      const json = await response.json();
-      alert('Tarea eliminada: ' + JSON.stringify(json.data.deleteTask));
-      // Actualizar la lista de tareas
-      document.getElementById('getAllTasksButton').click();
-    };
+    
+        const json = await response.json();
+        
+        if (json.errors) {
+          alert('Error al eliminar la tarea: ' + JSON.stringify(json.errors));
+          return;
+        }
+    
+        if (json.data && json.data.deleteTask) {
+          alert('Tarea eliminada exitosamente.');
+        } else {
+          alert('No se pudo eliminar la tarea.');
+        }
+    
+        // Actualizar la lista de tareas
+        document.getElementById('getAllTasksButton').click();
+      } catch (error) {
+        alert('Hubo un problema con la solicitud: ' + error.message);
+      }
+    };    
   </script>
 
 </body>
