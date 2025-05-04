@@ -6,12 +6,20 @@
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-
+  <script>
+    // Espera a que el DOM esté completamente cargado
+    document.addEventListener('DOMContentLoaded', () => {
+      // Abrir la lista de tareas al cargar la página
+      document.getElementById('getAllTasksButton').click();
+    });
+  </script>  
   <h1>Gestión de Tareas</h1>
 
   <!-- Ver todas las tareas -->
+  <h2>Obtener Tareas</h2>
+
   <button id="getAllTasksButton">Ver todas las tareas</button>
-  <h2>Tareas</h2>
+
   <table id="tasksTable">
     <thead>
       <tr>
@@ -27,67 +35,76 @@
     </tbody>
   </table>
 
-  <!-- Ver tarea por ID -->
-  <h2>Buscar tarea por ID</h2>
-  <input type="text" id="taskId" placeholder="ID de tarea" />
-  <button id="getTaskByIdButton">Buscar</button>
-  <h3>Resultado:</h3>
-  <pre id="taskResult"></pre>
-
-  <!-- Crear tarea -->
-  <h2>Crear tarea</h2>
-  <form id="createTaskForm">
-    <input type="text" id="createTitle" placeholder="Título" required />
-    <input type="text" id="createDescription" placeholder="Descripción" />
-    <label>
-      <input type="checkbox" id="createCompleted" /> Completada
-    </label>
-    <button type="submit">Crear</button>
-  </form>
-
-  <!-- Actualizar tarea -->
-  <h2>Actualizar tarea</h2>
-  <form id="updateTaskForm">
-    <input type="text" id="updateId" placeholder="ID de tarea" required />
-    <input type="text" id="updateTitle" placeholder="Nuevo título" />
-    <input type="text" id="updateDescription" placeholder="Nueva descripción" />
-    <label>
-      <input type="checkbox" id="updateCompleted" /> Completada
-    </label>
-    <button type="submit">Actualizar</button>
-  </form>
-
-  <!-- Eliminar tarea -->
-  <h2>Eliminar tarea</h2>
-  <form id="deleteTaskForm">
-    <input type="text" id="deleteId" placeholder="ID de tarea" required />
-    <button type="submit">Eliminar</button>
-  </form>
+  <!-- Formularios en fila -->
+  <section class="actions-container">
+    <div class="action-box">
+      <h2>Buscar tarea por ID</h2>
+      <input type="text" id="taskId" placeholder="ID de tarea" />
+      <button id="getTaskByIdButton">Buscar</button>
+      <h3>Resultado:</h3>
+      <pre id="taskResult"></pre>
+    </div>
+  
+    <div class="action-box">
+      <h2>Crear tarea</h2>
+      <form id="createTaskForm">
+        <input type="text" id="createTitle" placeholder="Título" required />
+        <input type="text" id="createDescription" placeholder="Descripción" />
+        <div class="checkbox-group">
+          <input type="checkbox" id="createCompleted" />
+          <label for="createCompleted">Completada</label>
+        </div>
+        <button type="submit">Crear</button>
+      </form>
+    </div>
+  
+    <div class="action-box">
+      <h2>Actualizar tarea</h2>
+      <form id="updateTaskForm">
+        <input type="text" id="updateId" placeholder="ID de tarea" required />
+        <input type="text" id="updateTitle" placeholder="Nuevo título" />
+        <input type="text" id="updateDescription" placeholder="Nueva descripción" />
+        <div class="checkbox-group">
+          <input type="checkbox" id="updateCompleted" />
+          <label for="updateCompleted">Completada</label>
+        </div>
+        <button type="submit">Actualizar</button>
+      </form>
+    </div>
+  
+    <div class="action-box">
+      <h2>Eliminar tarea</h2>
+      <form id="deleteTaskForm">
+        <input type="text" id="deleteId" placeholder="ID de tarea" required />
+        <button type="submit">Eliminar</button>
+      </form>
+    </div>
+  </section>  
 
   <script>
     const apiUrl = 'https://primergraphql.onrender.com/graphql';
 
     // Mostrar todas las tareas
     document.getElementById('getAllTasksButton').addEventListener('click', async () => {
-      const query = `
-        query {
-          getTasks {
-            id
-            title
-            description
-            completed
-          }
+      const query = `query {
+        getTasks {
+          id
+          title
+          description
+          completed
         }
-      `;
+      }`;
+
       const response = await fetch(apiUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ query })
       });
+
       const json = await response.json();
       const tasks = json.data.getTasks;
       const tbody = document.getElementById('tasksTable').getElementsByTagName('tbody')[0];
-      tbody.innerHTML = '';  // Limpiar la tabla antes de llenar con nuevos datos
+      tbody.innerHTML = '';  // Limpiar la tabla antes de llenarla
 
       tasks.forEach(task => {
         const row = tbody.insertRow();
@@ -97,31 +114,47 @@
         row.insertCell(3).textContent = task.completed ? 'Sí' : 'No';
 
         const actionsCell = row.insertCell(4);
+        
+        // Botón eliminar
         const deleteButton = document.createElement('button');
         deleteButton.textContent = 'Eliminar';
         deleteButton.onclick = () => deleteTask(task.id);
         actionsCell.appendChild(deleteButton);
+
+        // Botón editar
+        const editButton = document.createElement('button');
+        editButton.textContent = 'Editar';
+        editButton.onclick = () => fillEditForm(task);
+        actionsCell.appendChild(editButton);
       });
     });
+
+    // Llenar el formulario de edición con los datos de la tarea seleccionada
+    function fillEditForm(task) {
+      document.getElementById('updateId').value = task.id;
+      document.getElementById('updateTitle').value = task.title;
+      document.getElementById('updateDescription').value = task.description;
+      document.getElementById('updateCompleted').checked = task.completed;
+    }
 
     // Buscar tarea por ID
     document.getElementById('getTaskByIdButton').addEventListener('click', async () => {
       const taskId = document.getElementById('taskId').value;
-      const query = `
-        query {
-          getTask(id: "${taskId}") {
-            id
-            title
-            description
-            completed
-          }
+      const query = `query {
+        getTask(id: "${taskId}") {
+          id
+          title
+          description
+          completed
         }
-      `;
+      }`;
+
       const response = await fetch(apiUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ query })
       });
+
       const json = await response.json();
       const task = json.data.getTask;
       document.getElementById('taskResult').textContent = JSON.stringify(task, null, 2);
@@ -134,23 +167,25 @@
       const description = document.getElementById('createDescription').value;
       const completed = document.getElementById('createCompleted').checked;
 
-      const mutation = `
-        mutation {
-          createTask(title: "${title}", description: "${description}", completed: ${completed}) {
-            id
-            title
-            description
-            completed
-          }
+      const mutation = `mutation {
+        createTask(title: "${title}", description: "${description}", completed: ${completed}) {
+          id
+          title
+          description
+          completed
         }
-      `;
+      }`;
+
       const response = await fetch(apiUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ query: mutation })
       });
+
       const json = await response.json();
       alert('Tarea creada: ' + JSON.stringify(json.data.createTask));
+      // Actualizar la lista de tareas
+      document.getElementById('getAllTasksButton').click();
     });
 
     // Actualizar tarea
@@ -161,64 +196,72 @@
       const description = document.getElementById('updateDescription').value;
       const completed = document.getElementById('updateCompleted').checked;
 
-      const mutation = `
-        mutation {
-          updateTask(id: "${id}", title: "${title}", description: "${description}", completed: ${completed}) {
-            id
-            title
-            description
-            completed
-          }
+      const mutation = `mutation {
+        updateTask(id: "${id}", title: "${title}", description: "${description}", completed: ${completed}) {
+          id
+          title
+          description
+          completed
         }
-      `;
+      }`;
+
       const response = await fetch(apiUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ query: mutation })
       });
+
       const json = await response.json();
       alert('Tarea actualizada: ' + JSON.stringify(json.data.updateTask));
+      // Actualizar la lista de tareas
+      document.getElementById('getAllTasksButton').click();
     });
 
     // Eliminar tarea
     const deleteTask = async (id) => {
       try {
-        const mutation = `
-          mutation {
-            deleteTask(id: "${id}")
-          }
-        `;
-        
+        const mutation = `mutation {
+          deleteTask(id: "${id}")
+        }`;
+
         const response = await fetch(apiUrl, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ query: mutation }),
         });
-    
+
         if (!response.ok) {
           throw new Error('Error de red');
         }
-    
+
         const json = await response.json();
-        
+
         if (json.errors) {
           alert('Error al eliminar la tarea: ' + JSON.stringify(json.errors));
           return;
         }
-    
+
         if (json.data && json.data.deleteTask) {
           alert('Tarea eliminada exitosamente.');
         } else {
           alert('No se pudo eliminar la tarea.');
         }
-    
+
         // Actualizar la lista de tareas
         document.getElementById('getAllTasksButton').click();
       } catch (error) {
         alert('Hubo un problema con la solicitud: ' + error.message);
       }
-    };    
-  </script>
+    };
 
+    // Manejar envío del formulario de eliminar tarea
+    document.getElementById('deleteTaskForm').addEventListener('submit', async (e) => {
+      e.preventDefault(); // Prevenir recarga de página
+      const id = document.getElementById('deleteId').value.trim();
+      if (!id) return alert('Por favor, ingresa un ID válido.');
+
+      await deleteTask(id);
+    });
+  </script>
 </body>
 </html>
