@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Gestión de Tareas</title>
+  <style>
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    table, th, td {
+      border: 1px solid black;
+    }
+    th, td {
+      padding: 8px;
+      text-align: left;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Gestión de Tareas</h1>
+
+  <!-- Ver todas las tareas -->
+  <button id="getAllTasksButton">Ver todas las tareas</button>
+  <h2>Tareas</h2>
+  <table id="tasksTable">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Título</th>
+        <th>Descripción</th>
+        <th>Completada</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- Aquí se llenarán las filas de tareas -->
+    </tbody>
+  </table>
+
+  <!-- Ver tarea por ID -->
+  <h2>Buscar tarea por ID</h2>
+  <input type="text" id="taskId" placeholder="ID de tarea" />
+  <button id="getTaskByIdButton">Buscar</button>
+  <h3>Resultado:</h3>
+  <pre id="taskResult"></pre>
+
+  <!-- Crear tarea -->
+  <h2>Crear tarea</h2>
+  <form id="createTaskForm">
+    <input type="text" id="createTitle" placeholder="Título" required />
+    <input type="text" id="createDescription" placeholder="Descripción" />
+    <label>
+      <input type="checkbox" id="createCompleted" /> Completada
+    </label>
+    <button type="submit">Crear</button>
+  </form>
+
+  <!-- Actualizar tarea -->
+  <h2>Actualizar tarea</h2>
+  <form id="updateTaskForm">
+    <input type="text" id="updateId" placeholder="ID de tarea" required />
+    <input type="text" id="updateTitle" placeholder="Nuevo título" />
+    <input type="text" id="updateDescription" placeholder="Nueva descripción" />
+    <label>
+      <input type="checkbox" id="updateCompleted" /> Completada
+    </label>
+    <button type="submit">Actualizar</button>
+  </form>
+
+  <!-- Eliminar tarea -->
+  <h2>Eliminar tarea</h2>
+  <form id="deleteTaskForm">
+    <input type="text" id="deleteId" placeholder="ID de tarea" required />
+    <button type="submit">Eliminar</button>
+  </form>
+
+  <script>
+    const apiUrl = 'https://primergraphql.onrender.com/graphql';
+
+    // Mostrar todas las tareas
+    document.getElementById('getAllTasksButton').addEventListener('click', async () => {
+      const query = `
+        query {
+          getTasks {
+            id
+            title
+            description
+            completed
+          }
+        }
+      `;
+      const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query })
+      });
+      const json = await response.json();
+      const tasks = json.data.getTasks;
+      const tbody = document.getElementById('tasksTable').getElementsByTagName('tbody')[0];
+      tbody.innerHTML = '';  // Limpiar la tabla antes de llenar con nuevos datos
+
+      tasks.forEach(task => {
+        const row = tbody.insertRow();
+        row.insertCell(0).textContent = task.id;
+        row.insertCell(1).textContent = task.title;
+        row.insertCell(2).textContent = task.description;
+        row.insertCell(3).textContent = task.completed ? 'Sí' : 'No';
+
+        const actionsCell = row.insertCell(4);
+        const deleteButton = document.createElement('button');
+        deleteButton.textContent = 'Eliminar';
+        deleteButton.onclick = () => deleteTask(task.id);
+        actionsCell.appendChild(deleteButton);
+      });
+    });
+
+    // Buscar tarea por ID
+    document.getElementById('getTaskByIdButton').addEventListener('click', async () => {
+      const taskId = document.getElementById('taskId').value;
+      const query = `
+        query {
+          getTask(id: "${taskId}") {
+            id
+            title
+            description
+            completed
+          }
+        }
+      `;
+      const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query })
+      });
+      const json = await response.json();
+      const task = json.data.getTask;
+      document.getElementById('taskResult').textContent = JSON.stringify(task, null, 2);
+    });
+
+    // Crear tarea
+    document.getElementById('createTaskForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const title = document.getElementById('createTitle').value;
+      const description = document.getElementById('createDescription').value;
+      const completed = document.getElementById('createCompleted').checked;
+
+      const mutation = `
+        mutation {
+          createTask(title: "${title}", description: "${description}", completed: ${completed}) {
+            id
+            title
+            description
+            completed
+          }
+        }
+      `;
+      const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query: mutation })
+      });
+      const json = await response.json();
+      alert('Tarea creada: ' + JSON.stringify(json.data.createTask));
+    });
+
+    // Actualizar tarea
+    document.getElementById('updateTaskForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const id = document.getElementById('updateId').value;
+      const title = document.getElementById('updateTitle').value;
+      const description = document.getElementById('updateDescription').value;
+      const completed = document.getElementById('updateCompleted').checked;
+
+      const mutation = `
+        mutation {
+          updateTask(id: "${id}", title: "${title}", description: "${description}", completed: ${completed}) {
+            id
+            title
+            description
+            completed
+          }
+        }
+      `;
+      const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query: mutation })
+      });
+      const json = await response.json();
+      alert('Tarea actualizada: ' + JSON.stringify(json.data.updateTask));
+    });
+
+    // Eliminar tarea
+    const deleteTask = async (id) => {
+      const mutation = `
+        mutation {
+          deleteTask(id: "${id}")
+        }
+      `;
+      const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query: mutation })
+      });
+      const json = await response.json();
+      alert('Tarea eliminada: ' + JSON.stringify(json.data.deleteTask));
+      // Actualizar la lista de tareas
+      document.getElementById('getAllTasksButton').click();
+    };
+  </script>
+
+</body>
+</html>
