@@ -8,21 +8,23 @@
 
 /* Fondo y layout */
 body {
-  background-color: #f4f4f9;
+  background-color: #e6f7ff; /* Azul pastel */
   padding: 4rem;
+  padding-top: 1rem;
   display: flex;
-  justify-content: center;
+  justify-content: start;
   align-items: flex-start;
   min-height: 100vh;
   flex-direction: column;
   transition: background-color 0.3s ease; /* Suaviza el cambio de fondo */
+  padding-top: 2rem; /* Espacio superior */
 }
 
 /* Título principal */
 h1 {
   color: #333;
   font-size: 2.5rem;
-  margin-bottom: 20px;
+  margin-bottom: 1.5rem;
   text-align: center;
   transition: color 0.3s ease; /* Transición suave para el color */
 }

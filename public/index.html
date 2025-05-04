@@ -17,7 +17,6 @@
 
   <!-- Ver todas las tareas -->
   <h2>Obtener Tareas</h2>
-
   <button id="getAllTasksButton">Ver todas las tareas</button>
 
   <table id="tasksTable">
@@ -47,9 +46,9 @@
   
     <div class="action-box">
       <h2>Crear tarea</h2>
-      <form id="createTaskForm">
-        <input type="text" id="createTitle" placeholder="Título" required />
-        <input type="text" id="createDescription" placeholder="Descripción" />
+      <form id="createTaskForm" autocomplete="off">
+        <input type="text" id="createTitle" placeholder="Título" required autocomplete="off" />
+        <input type="text" id="createDescription" placeholder="Descripción" autocomplete="off" />
         <div class="checkbox-group">
           <input type="checkbox" id="createCompleted" />
           <label for="createCompleted">Completada</label>
@@ -57,13 +56,13 @@
         <button type="submit">Crear</button>
       </form>
     </div>
-  
+    
     <div class="action-box">
       <h2>Actualizar tarea</h2>
-      <form id="updateTaskForm">
-        <input type="text" id="updateId" placeholder="ID de tarea" required />
-        <input type="text" id="updateTitle" placeholder="Nuevo título" />
-        <input type="text" id="updateDescription" placeholder="Nueva descripción" />
+      <form id="updateTaskForm" autocomplete="off">
+        <input type="text" id="updateId" placeholder="ID de tarea" required autocomplete="off" />
+        <input type="text" id="updateTitle" placeholder="Nuevo título" autocomplete="off" />
+        <input type="text" id="updateDescription" placeholder="Nueva descripción" autocomplete="off" />
         <div class="checkbox-group">
           <input type="checkbox" id="updateCompleted" />
           <label for="updateCompleted">Completada</label>
@@ -71,14 +70,14 @@
         <button type="submit">Actualizar</button>
       </form>
     </div>
-  
+    
     <div class="action-box">
       <h2>Eliminar tarea</h2>
-      <form id="deleteTaskForm">
-        <input type="text" id="deleteId" placeholder="ID de tarea" required />
+      <form id="deleteTaskForm" autocomplete="off">
+        <input type="text" id="deleteId" placeholder="ID de tarea" required autocomplete="off" />
         <button type="submit">Eliminar</button>
       </form>
-    </div>
+    </div>    
   </section>  
 
   <script>
